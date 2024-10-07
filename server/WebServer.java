@@ -1,13 +1,20 @@
 package server;
 
+import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.logging.Logger;
 
 import server.config.MimeTypes;
 
 public class WebServer implements AutoCloseable {
 
+    private static final Logger logger = Logger.getLogger(WebServer.class.getName());
+
     private ServerSocket serverSocket;
     private boolean running;
+    private String documentRoot;
+    private MimeTypes mimeTypes;
 
     public static void main(String[] args) throws NumberFormatException, Exception {
         if (args.length != 2) {
@@ -22,8 +29,12 @@ public class WebServer implements AutoCloseable {
         }
     }
 
-    public WebServer(int port, String documentRoot) {
+    public WebServer(int port, String documentRoot) throws IOException {
+        this.documentRoot = documentRoot;
+        this.serverSocket = new ServerSocket(port);  // Initialize the ServerSocket
         this.running = true;
+        this.mimeTypes = MimeTypes.getDefault();  // Initialize MIME types with default
+        logger.info("WebServer started on port " + port);
     }
 
     /**
@@ -31,21 +42,7 @@ public class WebServer implements AutoCloseable {
      * Example of mimeTypeFileContent: html htm text/html\npng image/png\njpg
      * image/jpeg\ngif image/gif\n
      */
-    public WebServer(int port, String documentRoot, String mimeTypeFileContent) {
-        this.running = true;
 
-        MimeTypes mimeTypes = MimeTypes.getDefault();
-
-        // Parse the mimeTypesFileContent and add the mime types to the mimeTypes object
-        mimeTypeFileContent.lines().forEach(line -> {
-            String[] parts = line.split("\\s+");
-
-            for (int index = 0; index < parts.length - 1; index++) {
-                mimeTypes.addMimeType(parts[index], parts[parts.length - 1]);
-            }
-        });
-
-    }
 
     /**
      * After the webserver instance is constructed, this method will be
@@ -53,9 +50,13 @@ public class WebServer implements AutoCloseable {
      */
     public void listen() {
 
-        // Feel free to change this logic
         while (this.running) {
-            // Handle a request
+            try {
+                Socket clientSocket = serverSocket.accept();  // Accept incoming connections
+                new Thread(new ClientHandler(clientSocket, documentRoot, mimeTypes)).start();  // Handle each request in a new thread
+            } catch (IOException e) {
+                logger.severe("Error accepting connection: " + e.getMessage());
+            }
         }
     }
 

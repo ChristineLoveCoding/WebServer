@@ -22,10 +22,10 @@ public class TestGet {
         String docRoot = CreateWebSite.createDocumentRoot();
         CreateWebSite.addFileToDocumentRoot(Path.of(docRoot, "test.txt"), testContent);
 
-        try (WebServer server = new WebServer(9753, docRoot)) {
+        try (WebServer server = new WebServer(9999, docRoot)) {
             server.listen();
 
-            InputStream is = RequestSender.sendRequest(9753, "GET", "/test.txt", new String[] {}, null);
+            InputStream is = RequestSender.sendRequest(9999, "GET", "/test.txt", new String[] {}, null);
             RequestReader reader = new RequestReader(is);
 
             assertEquals("HTTP/1.1 200 Ok", reader.getFirstLine());
@@ -47,10 +47,10 @@ public class TestGet {
     public void testGetNonExistingDocument() throws Exception {
         String docRoot = CreateWebSite.createDocumentRoot();
 
-        try (WebServer server = new WebServer(9753, docRoot)) {
+        try (WebServer server = new WebServer(9999, docRoot)) {
             server.listen();
 
-            InputStream is = RequestSender.sendRequest(9753, "GET", "/non-existing.txt", new String[] {}, null);
+            InputStream is = RequestSender.sendRequest(9999, "GET", "/non-existing.txt", new String[] {}, null);
             RequestReader reader = new RequestReader(is);
 
             assertEquals("HTTP/1.1 404 Not Found", reader.getFirstLine());

@@ -20,15 +20,15 @@ public class TestMimeTypes {
     @ParameterizedTest
     @MethodSource("provideMimeTypes")
     public void testMimeTypes(String expectedMimeType, String fileName) throws Exception {
-        String testContent = "the server doesnt care what the content of a file is";
+        String testContent = "<html><body><h1>hello world</h1></body></html>";
 
         String docRoot = CreateWebSite.createDocumentRoot();
         CreateWebSite.addFileToDocumentRoot(Path.of(docRoot, "mime-test", fileName), testContent);
 
-        try (WebServer server = new WebServer(9753, docRoot)) {
+        try (WebServer server = new WebServer(9999, docRoot)) {
             server.listen();
 
-            InputStream is = RequestSender.sendRequest(9753, "GET", String.format("/mime-test/%s", fileName),
+            InputStream is = RequestSender.sendRequest(9999, "GET", String.format("/mime-test/%s", fileName),
                     new String[] {}, null);
             RequestReader reader = new RequestReader(is);
 
